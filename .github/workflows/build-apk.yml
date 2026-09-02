@@ -35,13 +35,14 @@ jobs:
           echo "Extracted source tree:"
           find build-source -maxdepth 4 -type f | sort | head -300
 
+      - name: Apply deterministic V2.9 compile fixes
+        run: bash "$GITHUB_WORKSPACE/.github/ci/v2.9-build-fixes.sh" build-source
+
       - name: Diagnose Java source tree
         run: |
           echo '--- Java files ---'
           find build-source -type f -name '*.java' | sort
-          echo '--- Relevant class declarations ---'
-          grep -R -n -E 'class (SpatialResourceParser|ResourceRegionProfiles|AccountSnapshot|OcrEngine|MainActivity)|interface (SpatialResourceParser|ResourceRegionProfiles)' build-source --include='*.java' || true
-          echo '--- Relevant references ---'
+          echo '--- Relevant references after fixes ---'
           grep -R -n -E 'SpatialResourceParser|ResourceRegionProfiles|source\(\)|RGBA_8888|ScrollView|Runnable' build-source --include='*.java' || true
 
       - name: Locate Gradle project
@@ -68,10 +69,6 @@ jobs:
           unzip -q /tmp/gradle.zip -d /tmp
           echo "/tmp/gradle-8.9/bin" >> "$GITHUB_PATH"
 
-      - name: Run lint
-        working-directory: ${{ steps.project.outputs.project_dir }}
-        run: gradle --no-daemon lintDebug
-
       - name: Run unit tests
         working-directory: ${{ steps.project.outputs.project_dir }}
         run: gradle --no-daemon testDebugUnitTest
@@ -79,6 +76,10 @@ jobs:
       - name: Build debug APK
         working-directory: ${{ steps.project.outputs.project_dir }}
         run: gradle --no-daemon assembleDebug
+
+      - name: Run lint
+        working-directory: ${{ steps.project.outputs.project_dir }}
+        run: gradle --no-daemon lintDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
