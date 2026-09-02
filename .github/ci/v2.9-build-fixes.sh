@@ -47,8 +47,6 @@ p=Path(sys.argv[1]); s=p.read_text().replace('android.graphics.ImageFormat.RGBA_
 p.write_text(s)
 PY
 
-# Replace EventStore with an implementation that handles every JSON operation
-# whose checked-exception signature differs between Android JSON stubs.
 if [ -n "${EVENT:-}" ] && [ -f "$EVENT" ]; then
 cat > "$EVENT" <<'JAVA'
 package com.ludusassistant.app.data;
@@ -80,38 +78,21 @@ public final class EventStore {
         if (event == null) return;
         JSONArray a = all();
         String id = "";
-        try {
-            id = event.getString("id");
-        } catch (JSONException ignored) {
-        }
+        try { id = event.getString("id"); } catch (JSONException ignored) { }
 
         boolean found = false;
         for (int i = 0; i < a.length(); i++) {
             JSONObject old = a.optJSONObject(i);
             if (old == null) continue;
             String oldId = "";
-            try {
-                oldId = old.getString("id");
-            } catch (JSONException ignored) {
-            }
+            try { oldId = old.getString("id"); } catch (JSONException ignored) { }
             if (!id.isEmpty() && id.equals(oldId)) {
-                try {
-                    a.put(i, event);
-                    found = true;
-                } catch (JSONException ignored) {
-                    // Keep the existing event if this JSON implementation rejects the replacement.
-                }
+                a.put(i, event);
+                found = true;
                 break;
             }
         }
-
-        if (!found) {
-            try {
-                a.put(event);
-            } catch (JSONException ignored) {
-                return;
-            }
-        }
+        if (!found) a.put(event);
         p.edit().putString(KEY, a.toString()).apply();
     }
 
@@ -130,7 +111,6 @@ grep -q 'android.graphics.PixelFormat.RGBA_8888' "$OCR"
 if [ -n "${EVENT:-}" ] && [ -f "$EVENT" ]; then
   grep -q 'event.getString("id")' "$EVENT"
   grep -q 'a.put(i, event)' "$EVENT"
-  grep -q 'catch (JSONException ignored)' "$EVENT"
 fi
 
 echo 'V2.9 build fixes applied.'
