@@ -7,6 +7,7 @@ OBS="$ROOT/app/src/main/java/com/ludusassistant/app/vision/ObservationPipeline.j
 MAIN="$ROOT/app/src/main/java/com/ludusassistant/app/MainActivity.java"
 SNAP="$ROOT/app/src/main/java/com/ludusassistant/app/account/AccountSnapshot.java"
 OCR="$ROOT/app/src/main/java/com/ludusassistant/app/vision/OcrEngine.java"
+EVENT=$(find "$ROOT" -type f -name 'EventStore.java' | head -1)
 
 # Fix missing imports introduced by the V2.9 source packaging.
 python3 - "$OBS" <<'PY'
@@ -50,11 +51,35 @@ s=p.read_text().replace('android.graphics.ImageFormat.RGBA_8888', 'android.graph
 p.write_text(s)
 PY
 
+# EventStore: Android's JSON implementation may expose optString through a checked
+# JSONException signature. Keep persistence robust by routing the affected lookup
+# through a local safe helper instead of leaking a checked exception into callers.
+if [ -n "${EVENT:-}" ] && [ -f "$EVENT" ]; then
+python3 - "$EVENT" <<'PY'
+from pathlib import Path
+import re, sys
+p=Path(sys.argv[1])
+s=p.read_text()
+needle='old.optString("id")'
+if needle in s and 'safeEventOptString' not in s:
+    s=s.replace(needle, 'safeEventOptString(old, "id")')
+    # Insert helper immediately before the final class brace.
+    pos=s.rfind('}')
+    helper='''\n    private static String safeEventOptString(org.json.JSONObject object, String key) {\n        try {\n            return object.optString(key);\n        } catch (org.json.JSONException ignored) {\n            return "";\n        }\n    }\n'''
+    if pos >= 0:
+        s=s[:pos]+helper+s[pos:]
+    p.write_text(s)
+PY
+fi
+
 # Verify the intended fixes are present before Gradle starts.
 grep -q 'import com.ludusassistant.app.vision.parser.SpatialResourceParser;' "$OBS"
 grep -q 'new Runnable()' "$MAIN"
 grep -q 'private ScrollView build()' "$MAIN"
 grep -q 'public String source()' "$SNAP"
 grep -q 'android.graphics.PixelFormat.RGBA_8888' "$OCR"
+if [ -n "${EVENT:-}" ] && [ -f "$EVENT" ]; then
+  grep -q 'safeEventOptString' "$EVENT"
+fi
 
 echo 'V2.9 build fixes applied.'
