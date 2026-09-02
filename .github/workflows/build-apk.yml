@@ -33,7 +33,16 @@ jobs:
           mkdir build-source
           unzip -q LudusAssistant-V2.9-source.zip -d build-source
           echo "Extracted source tree:"
-          find build-source -maxdepth 3 -type f | sort | head -200
+          find build-source -maxdepth 4 -type f | sort | head -300
+
+      - name: Diagnose Java source tree
+        run: |
+          echo '--- Java files ---'
+          find build-source -type f -name '*.java' | sort
+          echo '--- Relevant class declarations ---'
+          grep -R -n -E 'class (SpatialResourceParser|ResourceRegionProfiles|AccountSnapshot|OcrEngine|MainActivity)|interface (SpatialResourceParser|ResourceRegionProfiles)' build-source --include='*.java' || true
+          echo '--- Relevant references ---'
+          grep -R -n -E 'SpatialResourceParser|ResourceRegionProfiles|source\(\)|RGBA_8888|ScrollView|Runnable' build-source --include='*.java' || true
 
       - name: Locate Gradle project
         id: project
