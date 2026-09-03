@@ -26,9 +26,10 @@ guide=read('app/src/main/java/com/ludusassistant/app/data/GuideRepository.java')
 checks = [
  ('EventStore indexed JSONArray.put is exception-safe', re.search(r'try\s*\{\s*a\.put\(i,event\)', event) is not None),
  ('EventStore append JSONArray.put is exception-safe', re.search(r'if\(!found\).*?try\s*\{\s*a\.put\(event\)', event, re.S) is not None),
- ('OCR rejects unsupported format with OR guard', 'image.getFormat() != android.graphics.ImageFormat.RGBA_8888 || image.getPlanes().length == 0' in ocr),
+ ('OCR rejects unsupported format with OR guard', 'image.getFormat() != android.graphics.PixelFormat.RGBA_8888 || image.getPlanes().length == 0' in ocr),
  ('MainActivity hourly runnable is self-referential safely', 'new Runnable(){ @Override public void run(){ render(); handler.postDelayed(this' in main),
  ('MainActivity build returns ScrollView', 'private ScrollView build()' in main),
+ ('MainActivity renders canonical resource catalog', 'LudusResourceCatalog.definitions()' in main),
  ('ObservationEngine uses canonical resource catalog', 'LudusResourceCatalog.definitions()' in obs),
  ('CaptureService persists fresh account snapshot after observation', 'snapshots.save(AccountSnapshotBuilder.fromObserved' in capture),
  ('Install classification precedes generic ad classification', parser.find('EXTERNAL_APP_INSTALL') < parser.find('ADVERTISEMENT')),
@@ -38,6 +39,7 @@ checks = [
  ('MediaProjection service type declared', 'android:foregroundServiceType="mediaProjection"' in manifest),
  ('AppStore persists resource and ledger together', 'putString(RES,before.toString()).putString(LOG,log.toString()).apply()' in appstore),
  ('Guide replacement clears refresh-due flag only on actual replacement', 'putBoolean("refresh_due",false)' in guide),
+ ('Real JUnit tests exist', Path(root/'app/src/test/java/com/ludusassistant/app/automation/AutomationPlannerTest.java').exists() and Path(root/'app/src/test/java/com/ludusassistant/app/vision/parser/VisionParserTest.java').exists()),
 ]
 failed=[]
 for name,ok in checks:
