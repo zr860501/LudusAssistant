@@ -25,7 +25,7 @@ appstore=read('app/src/main/java/com/ludusassistant/app/data/AppStore.java')
 guide=read('app/src/main/java/com/ludusassistant/app/data/GuideRepository.java')
 checks = [
  ('EventStore indexed JSONArray.put is exception-safe', re.search(r'try\s*\{\s*a\.put\(i,event\)', event) is not None),
- ('EventStore append JSONArray.put is exception-safe', re.search(r'if\(!found\).*?try\s*\{\s*a\.put\(event\)', event, re.S) is not None),
+ ('EventStore append uses Android JSONArray.put(Object) directly', re.search(r'if\(!found\)a\.put\(event\)', event) is not None and 'if(!found){try{a.put(event)' not in event),
  ('OCR rejects unsupported format with OR guard', 'image.getFormat() != android.graphics.PixelFormat.RGBA_8888 || image.getPlanes().length == 0' in ocr),
  ('MainActivity hourly runnable is self-referential safely', 'new Runnable(){ @Override public void run(){ render(); handler.postDelayed(this' in main),
  ('MainActivity build returns ScrollView', 'private ScrollView build()' in main),
