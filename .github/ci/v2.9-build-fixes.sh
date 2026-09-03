@@ -44,6 +44,8 @@ python3 - "$OCR" <<'PY'
 from pathlib import Path
 import sys
 p=Path(sys.argv[1]); s=p.read_text().replace('android.graphics.ImageFormat.RGBA_8888','android.graphics.PixelFormat.RGBA_8888')
+s=s.replace('image.getFormat() != android.graphics.ImageFormat.RGBA_8888 && image.getPlanes().length == 0',
+            'image.getFormat() != android.graphics.ImageFormat.RGBA_8888 || image.getPlanes().length == 0')
 p.write_text(s)
 PY
 
@@ -87,12 +89,14 @@ public final class EventStore {
             String oldId = "";
             try { oldId = old.getString("id"); } catch (JSONException ignored) { }
             if (!id.isEmpty() && id.equals(oldId)) {
-                a.put(i, event);
-                found = true;
-                break;
+                try { a.put(i, event); found = true; break; }
+                catch (JSONException ignored) { return; }
             }
         }
-        if (!found) a.put(event);
+        if (!found) {
+            try { a.put(event); }
+            catch (JSONException ignored) { return; }
+        }
         p.edit().putString(KEY, a.toString()).apply();
     }
 
@@ -109,8 +113,8 @@ grep -q 'private ScrollView build()' "$MAIN"
 grep -q 'public String source()' "$SNAP"
 grep -q 'android.graphics.PixelFormat.RGBA_8888' "$OCR"
 if [ -n "${EVENT:-}" ] && [ -f "$EVENT" ]; then
-  grep -q 'event.getString("id")' "$EVENT"
-  grep -q 'a.put(i, event)' "$EVENT"
+  grep -q 'try { a.put(i, event)' "$EVENT"
+  grep -q 'try { a.put(event)' "$EVENT"
 fi
 
 echo 'V2.9 build fixes applied.'
