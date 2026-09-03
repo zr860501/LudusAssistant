@@ -35,15 +35,18 @@ jobs:
           echo "Extracted source tree:"
           find build-source -maxdepth 4 -type f | sort | head -300
 
-      - name: Apply deterministic V2.9 compile fixes
+      - name: Apply deterministic V2.9 compatibility fixes
         run: bash "$GITHUB_WORKSPACE/.github/ci/v2.9-build-fixes.sh" build-source
+
+      - name: Run architecture and regression audit
+        run: bash "$GITHUB_WORKSPACE/.github/ci/audit-v29-source.sh" build-source
 
       - name: Diagnose Java source tree
         run: |
           echo '--- Java files ---'
           find build-source -type f -name '*.java' | sort
-          echo '--- Relevant references after fixes ---'
-          grep -R -n -E 'SpatialResourceParser|ResourceRegionProfiles|source\(\)|RGBA_8888|ScrollView|Runnable' build-source --include='*.java' || true
+          echo '--- Relevant references after audit ---'
+          grep -R -n -E 'SpatialResourceParser|ResourceRegionProfiles|source\(\)|RGBA_8888|ScrollView|Runnable|LudusResourceCatalog' build-source --include='*.java' || true
 
       - name: Locate Gradle project
         id: project
