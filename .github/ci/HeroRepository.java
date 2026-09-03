@@ -1,18 +1,119 @@
 package com.ludusassistant.app.hero;
-import android.content.Context; import org.json.JSONArray; import org.json.JSONObject; import java.util.*;
-/** Version-aware public-data seed. Exact skill numerics remain client-verified rather than fabricated. */
+import android.content.Context;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.util.*;
+/** Versioned LUDUS hero catalog. Tier placement is sourced from the Aug-2026 public tier list; skill text is populated only where publicly documented and otherwise explicitly marked unverified. Never fabricate race/faction/rarity/stats. */
 public final class HeroRepository {
- private final List<Hero> heroes=new ArrayList<>(); public HeroRepository(Context c){seed();}
- private void seed(){heroes.clear();
-  add("lion_dancer","Lion Dancer","S+","综合定位待验证","公开榜单S+"); add("love_marine","Love Marine","S+","综合定位待验证","公开榜单S+"); add("evil_eye","Evil Eye","S+","DPS/减益","输出与减益"); add("witch","Witch","S+","综合定位待验证","公开榜单S+"); add("mummy_warrior","Mummy Warrior","S+","综合定位待验证","公开榜单S+"); add("lich","Lich","S+","综合定位待验证","公开榜单S+"); add("pirate_queen","Pirate Queen","S+","综合定位待验证","公开榜单S+"); add("princess","Princess","S+","坦克/控制","前排承伤/控制"); add("storm","Storm","S+","DPS","高压持续输出"); add("pumpkin_jack","Pumpkin Jack","S+","综合定位待验证","公开榜单S+"); add("ice_witch","Ice Witch","S+","综合定位待验证","公开榜单S+"); add("cupid","Cupid","S+","综合定位待验证","公开榜单S+"); add("king_arthur","King Arthur","S+","综合定位待验证","公开榜单S+"); add("mako","Mako","S+","位移/控制","干扰敌方站位"); add("wizardess","Wizardess","S+","综合定位待验证","公开榜单S+"); add("buddy","Buddy","S+","综合定位待验证","社区常见核心"); add("verena","Verena","S+","综合定位待验证","公开榜单S+"); add("ghost_cat","Ghost Cat","S+","综合定位待验证","公开榜单S+"); add("yeti","Yeti","S+","综合定位待验证","公开攻略常见控制/输出"); add("sniper_girl","Sniper Girl","S+","综合定位待验证","公开榜单S+");
-  String[] s={"Friday","Gambler","Tech Golem","Angel","Gunflower","Boaris","Chief","Jelly Knight","Electric Mage","Iron Tony","Leprechaun","Robo Santa","Muerta","Agent","Lava Girl","Little Red Cap","Witch Doctor","Gunbot","Alice","Uruk","Firestarter","Monkey King","Druid","Galaction","Sandy Turmoil","Sword-Man"}; for(String n:s)add(id(n),n,"S","综合定位待验证","公开榜单S");
-  String[] a={"Warlock","Minotaur","Totem","Gunslinger","Rocky","Gorgon","Succubus","Snoozemander","Easter Bunny","Duckwing","Pop Star","Gingerbread Man","Crystallix","Brewmaster","Turkey Master","Ludusman","Drago","Draco","Griffon","Captain Nemo","Vampire"}; for(String n:a)add(id(n),n,"A","综合定位待验证","公开榜单A");
-  String[] b={"Plague Doctor","Slime","Franken","Axe Thrower","Samurai","Arachne","Bastion","Crusader","Shaman","Executioner","Paladin","Genie","Jester","Mr. Gray","Gearhead","Fencer","Valkyrie","Treant","Imp","Nightmare","Vulcan","Aqua","Trickster","Mimic","Kitsune"}; for(String n:b)add(id(n),n,"B","综合定位待验证","公开榜单B");
-  String[] c={"Viking","Huntress","Saboteur","Fairy","Cannoneer"}; for(String n:c)add(id(n),n,"C","综合定位待验证","公开榜单C");
- }
- private String id(String n){return n.toLowerCase(Locale.ROOT).replace(" ","_").replace("-","_");}
- private void add(String id,String name,String tier,String role,String note){String ability="技能详情：当前公开资料未给出可可靠复现的完整数值，助手将在客户端观测/版本资料确认后覆盖；不虚构数值。"; heroes.add(new Hero(id,name,"未分类","未分类",tier,role,ability,"强度参考："+tier+"；具体技能、星级成长和阵营以当前客户端为准。", "public-2026-07"));}
- public List<Hero> list(){return Collections.unmodifiableList(heroes);} public JSONArray all(){return filter(null,null,null);} public JSONArray filter(String race,String faction,String rarity){JSONArray a=new JSONArray(); for(Hero h:heroes){if(race!=null&&!race.isEmpty()&&!race.equals(h.race))continue;if(faction!=null&&!faction.isEmpty()&&!faction.equals(h.faction))continue;if(rarity!=null&&!rarity.isEmpty()&&!rarity.equals(h.rarity))continue;try{a.put(toJson(h));}catch(Exception ignored){}}return a;} private JSONObject toJson(Hero h)throws Exception{return new JSONObject().put("id",h.id).put("name",h.name).put("race",h.race).put("faction",h.faction).put("rarity",h.rarity).put("role",h.role).put("ability",h.ability).put("gameplay",h.gameplay).put("version",h.version);}
- public String grouped(){Map<String,List<Hero>> m=new LinkedHashMap<>();for(Hero h:heroes)m.computeIfAbsent(h.rarity,k->new ArrayList<>()).add(h);StringBuilder s=new StringBuilder();for(Map.Entry<String,List<Hero>> e:m.entrySet()){s.append("【强度层级：").append(e.getKey()).append("】\n");for(Hero h:e.getValue())s.append("• ").append(h.name).append(" · ").append(h.role).append("\n");}return s.toString();}
- public String detail(String id){for(Hero h:heroes)if(h.id.equals(id))return "【"+h.name+"】\n稀有度/榜单："+h.rarity+"\n定位："+h.role+"\n技能："+h.ability+"\n玩法："+h.gameplay;return "未找到英雄";}
+    private final List<Hero> heroes = new ArrayList<>();
+    public HeroRepository(Context context){ seed(); }
+    private void seed(){ heroes.clear();
+        add("lion_dancer","Lion Dancer","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("love_marine","Love Marine","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("evil_eye","Evil Eye","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("witch","Witch","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("mummy_warrior","Mummy Warrior","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("lich","Lich","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("pirate_queen","Pirate Queen","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("princess","Princess","公开资料未核验","公开资料未核验","公开资料未核验","输出/控制","战士/坦克；可造成范围伤害与眩晕，并具备每回合一次、50%最大生命值复活描述。","前排承伤并制造控制窗口；最终数值以客户端为准。","1.37.x","S+");
+        add("storm","Storm","公开资料未核验","公开资料未核验","公开资料未核验","输出/控制","近战高生命输出；技能可穿透敌人并施加 Storm Sigil，并反射部分近战伤害。","优先保证存活，再利用技能持续压制。","1.37.x","S+");
+        add("pumpkin_jack","Pumpkin Jack","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("ice_witch","Ice Witch","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("cupid","Cupid","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("king_arthur","King Arthur","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("mako","Mako","公开资料未核验","公开资料未核验","公开资料未核验","输出/控制","战士/射手；可用鱼叉将敌方后排输出拉近，核心价值在于位移与站位破坏。","利用站位与拉取目标破坏敌方核心输出位置。","1.37.x","S+");
+        add("wizardess","Wizardess","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("buddy","Buddy","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("verena","Verena","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("ghost_cat","Ghost Cat","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("yeti","Yeti","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("sniper_girl","Sniper Girl","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S+");
+        add("friday","Friday","公开资料未核验","公开资料未核验","公开资料未核验","持续伤害/召唤","持续伤害/召唤；召唤迪斯科僵尸，舞池内死亡敌人可转化为更多僵尸。","需要稳定前排与支援。","1.37.x","S");
+        add("gambler","Gambler","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("tech_golem","Tech Golem","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("angel","Angel","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("gunflower","Gunflower","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("boaris","Boaris","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("chief","Chief","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("jelly_knight","Jelly Knight","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("electric_mage","Electric Mage","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("iron_tony","Iron Tony","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("leprechaun","Leprechaun","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("robo_santa","Robo Santa","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("muerta","Muerta","公开资料未核验","公开资料未核验","公开资料未核验","召唤","召唤型英雄；召唤 Crypt 持续生成 Skeleton，需要前排保护召唤核心。","保护召唤核心，搭配额外前排。","1.37.x","S");
+        add("agent","Agent","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("lava_girl","Lava Girl","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("little_red_cap","Little Red Cap","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("witch_doctor","Witch Doctor","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("gunbot","Gunbot","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","远程输出；直线激光攻击，适合由前排保护的稳定持续输出。","利用安全距离持续输出；前排保护优先。","1.37.x","S");
+        add("alice","Alice","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("uruk","Uruk","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("firestarter","Firestarter","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("monkey_king","Monkey King","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("druid","Druid","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("galaction","Galaction","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("sandy_turmoil","Sandy Turmoil","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("sword_man","Sword-Man","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","S");
+        add("gingerbread_man","Gingerbread Man","公开资料未核验","公开资料未核验","公开资料未核验","输出/控制","近战输出/控制；锥形范围伤害并眩晕，依赖前排与支援。","需要前排保护，利用范围控制制造输出窗口。","1.37.x","A");
+        add("warlock","Warlock","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("minotaur","Minotaur","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("totem","Totem","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("gunslinger","Gunslinger","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("rocky","Rocky","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("gorgon","Gorgon","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("succubus","Succubus","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("snoozmander","Snoozmander","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("easter_bunny","Easter Bunny","公开资料未核验","公开资料未核验","公开资料未核验","召唤","召唤型远程辅助输出；可召唤自身复制体进行远程攻击。","需要稳定前排。","1.37.x","A");
+        add("duckwing","Duckwing","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("pop_star","Pop Star","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("crystallix","Crystallix","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("brewmaster","Brewmaster","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("turkey_master","Turkey Master","公开资料未核验","公开资料未核验","公开资料未核验","召唤","召唤型；短时间消失并召唤多只火鸡，依靠数量形成压力。","利用数量形成压力。","1.37.x","A");
+        add("ludusman","Ludusman","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("drago","Drago","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("draco","Draco","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("griffon","Griffon","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("captain_nemo","Captain Nemo","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("vampire","Vampire","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","A");
+        add("chainsaw","Chainsaw","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","1.36公开资料新增英雄；完整技能/数值待客户端核验。","当前版本应以客户端为最终依据。","1.37.x","A");
+        add("plague_doctor","Plague Doctor","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("slime","Slime","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("franken","Franken","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("axe_thrower","Axe Thrower","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("samurai","Samurai","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("arachne","Arachne","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("bastion","Bastion","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("crusader","Crusader","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("shaman","Shaman","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("executioner","Executioner","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("paladin","Paladin","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("genie","Genie","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("jester","Jester","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("mr_gray","Mr. Gray","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("gearhead","Gearhead","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","远程单体；可获得护盾，护盾破裂后可传送回原位置。","利用护盾与位置回撤保证生存。","1.37.x","B");
+        add("fencer","Fencer","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("valkyrie","Valkyrie","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("treant","Treant","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("imp","Imp","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("nightmare","Nightmare","公开资料未核验","公开资料未核验","公开资料未核验","控制/刺客","刺客型；可传送至敌方或敌群并施加恐惧，公开攻略评价偏低。","寻找敌方核心并利用控制制造窗口。","1.37.x","B");
+        add("vulcan","Vulcan","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("aqua","Aqua","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("trickster","Trickster","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("mimic","Mimic","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","B");
+        add("kitsune","Kitsune","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","近战；依赖靠近敌人并利用自身领域效果，当前公开攻略评价偏低。","依赖站位与敌人距离。","1.37.x","B");
+        add("viking","Viking","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","C");
+        add("huntress","Huntress","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","C");
+        add("saboteur","Saboteur","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；公开攻略将其作为早期基础英雄。","早期使用即可，后期应逐步替换。","1.37.x","C");
+        add("fairy","Fairy","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","C");
+        add("cannoneer","Cannoneer","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开资料仅确认英雄名称与分层；完整技能/数值待客户端核验。","以当前版本客户端为最终依据。","1.37.x","C");
+        add("space_invaders","Space Invaders","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","公开攻略描述为高输出直线攻击单位，被击败后仍留下较弱复制体；该条不在主表分层中，按S+描述保留。","以客户端当前版本为最终依据。","1.37.x","S+");
+        add("thanh_giong","Thánh Gióng","公开资料未核验","公开资料未核验","公开资料未核验","公开资料未核验","1.37.0版本历史显示为全新/再现的传奇英雄；完整技能与强度尚未获得足够公开资料，禁止猜测。","以客户端当前版本为最终依据。","1.37.0","NR");
+    }
+    private void add(String id,String name,String race,String faction,String rarity,String role,String ability,String gameplay,String version,String tier){heroes.add(new Hero(id,name,race,faction,rarity,role,ability,gameplay,version,tier));}
+    public List<Hero> list(){return Collections.unmodifiableList(heroes);}
+    public JSONArray all(){return filter(null,null,null);}
+    public JSONArray filter(String race,String faction,String rarity){JSONArray a=new JSONArray(); for(Hero h:heroes){if(race!=null&&!race.isEmpty()&&!race.equals(h.race))continue;if(faction!=null&&!faction.isEmpty()&&!faction.equals(h.faction))continue;if(rarity!=null&&!rarity.isEmpty()&&!rarity.equals(h.rarity))continue;try{a.put(toJson(h));}catch(Exception ignored){}} return a;}
+    private JSONObject toJson(Hero h)throws Exception{return new JSONObject().put("id",h.id).put("name",h.name).put("race",h.race).put("faction",h.faction).put("rarity",h.rarity).put("role",h.role).put("ability",h.ability).put("gameplay",h.gameplay).put("version",h.version).put("tier",h.tier);}
+    public String grouped(){Map<String,List<Hero>> m=new LinkedHashMap<>();for(Hero h:heroes)m.computeIfAbsent(h.tier,k->new ArrayList<>()).add(h);StringBuilder s=new StringBuilder();for(Map.Entry<String,List<Hero>> e:m.entrySet()){s.append("【强度层级 ").append(e.getKey()).append("】\n");for(Hero h:e.getValue())s.append("• ").append(h.name).append(" · ").append(h.ability).append("\n");}return s.toString();}
+    public String detail(String id){for(Hero h:heroes)if(h.id.equals(id))return "【"+h.name+"】\n强度层级："+h.tier+"\n种族："+h.race+"\n阵营："+h.faction+"\n稀有度："+h.rarity+"\n定位："+h.role+"\n技能："+h.ability+"\n玩法："+h.gameplay+"\n适用版本："+h.version;return "未找到英雄";}
 }
